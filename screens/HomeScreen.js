@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, Text, Button, View, FlatList, StyleSheet, TouchableOpacity, Alert, Modal } from 'react-native';
+import { SafeAreaView, Text, View, FlatList, StyleSheet, TouchableOpacity, Alert, Modal, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { Appbar } from 'react-native-paper';
 
 const HomeScreen = ({ navigation }) => {
   const [isRunning, setIsRunning] = useState(false); // Indica se o cronômetro está em execução
@@ -13,7 +13,7 @@ const HomeScreen = ({ navigation }) => {
 
   const intervalRef = useRef(null);
 
-  //Carrega as contrações salvas do AsyncStorage quando o componente é montado
+  // Carrega as contrações salvas do AsyncStorage quando o componente é montado
   useEffect(() => {
     const loadContractions = async () => {
       try {
@@ -29,7 +29,7 @@ const HomeScreen = ({ navigation }) => {
     loadContractions();
   }, []);
 
-  //Atualiza o tempo atual a cada segundo quando o cronômetro está em execução
+  // Atualiza o tempo atual a cada segundo quando o cronômetro está em execução
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
@@ -41,8 +41,7 @@ const HomeScreen = ({ navigation }) => {
     return () => clearInterval(intervalRef.current);
   }, [isRunning]);
 
-  //Inicia ou pausa o cronômetro
-
+  // Inicia ou pausa o cronômetro
   const startPauseTimer = () => {
     if (isRunning) {
       const endTime = new Date();
@@ -93,7 +92,7 @@ const HomeScreen = ({ navigation }) => {
     await storeContractions(updatedContractions);
   };
 
-   // Limpa todas as contrações do AsyncStorage
+  // Limpa todas as contrações do AsyncStorage
   const clearContractions = async () => {
     try {
       await AsyncStorage.removeItem('@contractions');
@@ -126,7 +125,7 @@ const HomeScreen = ({ navigation }) => {
 
       // Se ambos os padrões forem regulares, alertar o usuário
       if (areIntervalsRegular && areDurationsRegular) {
-        Alert.alert('Attention', 'You might be in real labor. Please contact your healthcare provider.');
+        Alert.alert('Atenção', 'Você pode estar em trabalho de parto real. Por favor, entre em contato com seu médico.');
       }
     }
   };
@@ -151,17 +150,14 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('About')}>
-          <Icon name="info" size={30} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={clearContractions}>
-          <Icon name="delete" size={30} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <Appbar.Header>
+        <Appbar.Action icon="information" onPress={() => navigation.navigate('About')} />
+        <Appbar.Content title="Monitor de Contrações" />
+        <Appbar.Action icon="delete" onPress={clearContractions} /> 
+      </Appbar.Header>
       <Text style={styles.timer}>
         {isRunning
-          ? `${Math.floor((new Date() - startTime) / 1000)} segundos`
+          ? `${Math.floor((new Date() - startTime) / 1000)} s`
           : '00:00:00'}
       </Text>
       <Text>Duração Média: {calculateAverageDuration()} segundos</Text>
@@ -181,7 +177,12 @@ const HomeScreen = ({ navigation }) => {
         )}
       />
       <View style={styles.footer}>
-        <Button title={isRunning ? 'Fim da Contração' : 'Inicio da Contração'} onPress={startPauseTimer} />
+        <TouchableOpacity
+          style={[styles.roundButton, { backgroundColor: isRunning ? '#f00' : '#4CAF50' }]}
+          onPress={startPauseTimer}
+        >
+          <Text style={styles.buttonText}>{isRunning ? 'Fim' : 'Início'}</Text>
+        </TouchableOpacity>
       </View>
       <Modal
         animationType="slide"
@@ -192,10 +193,18 @@ const HomeScreen = ({ navigation }) => {
         }}
       >
         <View style={styles.modalView}>
-          <Text style={styles.modalText}>Select Intensity</Text>
-          <Button title="Leve" onPress={() => saveContraction('leve')} />
-          <Button title="Moderada" onPress={() => saveContraction('moderada')} />
-          <Button title="Intensa" onPress={() => saveContraction('intensa')} />
+          <Text style={styles.modalText}>Selecione a Intensidade</Text>
+          <View style={styles.modalButtons}>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'green' }]} onPress={() => saveContraction('Leve')}>
+              <Text style={styles.modalButtonText}>Leve</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'yellow' }]} onPress={() => saveContraction('Moderada')}>
+              <Text style={styles.modalButtonText}>Moderada</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'red' }]} onPress={() => saveContraction('Intensa')}>
+              <Text style={styles.modalButtonText}>Intensa</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
@@ -208,13 +217,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
   },
   timer: {
     fontSize: 48,
@@ -229,9 +231,20 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 120,
     width: '100%',
     alignItems: 'center',
+  },
+  roundButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
   },
   modalView: {
     margin: 20,
@@ -251,6 +264,18 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
+  },
+  modalButtons: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalButton: {
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  modalButtonText: {
+    color: 'white',
   },
 });
 
