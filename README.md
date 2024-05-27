@@ -9,7 +9,6 @@ Teve como objetivo além da elaboração do documento de conclusão, o primeiro 
 - **Histórico de Contrações**: Visualize um histórico das contrações com informações sobre duração e intensidade.
 - **Intensidade das Contrações**: Marque a intensidade da contração como leve, moderada ou intensa através de um sistema de cores.
 - **Armazenamento Local**: Todos os dados são salvos localmente no dispositivo para privacidade e facilidade de acesso.
-- 
 ## Tecnologias Utilizadas
 
 - **React Native**: Framework para desenvolvimento de aplicativos móveis usando JavaScript.
