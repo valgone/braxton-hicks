@@ -9,6 +9,7 @@ const HomeScreen = ({ navigation }) => {
   const [currentTime, setCurrentTime] = useState(null); // Tempo atual para calcular a duração
   const [contractions, setContractions] = useState([]); // Lista de contrações registradas
   const [modalVisible, setModalVisible] = useState(false); // Visibilidade do modal para selecionar a intensidade
+  const [clearModalVisible, setClearModalVisible] = useState(false); // Estado para o modal de confirmação
   const [currentContraction, setCurrentContraction] = useState(null); // Detalhes da contração atual
 
   const intervalRef = useRef(null);
@@ -92,16 +93,45 @@ const HomeScreen = ({ navigation }) => {
     await storeContractions(updatedContractions);
   };
 
+  // Modificada o estado do para msg de confirmação
+  const confirmClearContractions = () => {
+    setClearModalVisible(true);
+  };
+
+  // Um alert para confirma a exclusão de um unico elemento
+  const confirmDeleteContraction = (index) => {
+    Alert.alert(
+      "Confirmar exclusão",
+      "Você realmente deseja deletar esta contração?",
+      [
+        {
+          text: "Cancelar",
+          onPress: () => console.log("Cancelado"),
+          style: "cancel"
+        },
+        { 
+          text: "Deletar", 
+          onPress: () => deleteContraction(index),
+          style: "destructive"
+        }
+      ],
+      { cancelable: false }
+    );
+  };
+  
+
   // Limpa todas as contrações do AsyncStorage
   const clearContractions = async () => {
     try {
       await AsyncStorage.removeItem('@contractions');
       setContractions([]);
+      setClearModalVisible(false); // Fechar modal após a limpeza
     } catch (e) {
       console.error(e);
     }
   };
 
+  // Verifica o padrão das contrações
   const checkContractionPattern = (contractions) => {
     if (contractions.length >= 3) {
       const lastThreeContractions = contractions.slice(-3);
@@ -118,7 +148,7 @@ const HomeScreen = ({ navigation }) => {
       });
 
       // Verifica se os intervalos estão entre 4 e 6 minutos
-      const areIntervalsRegular = intervals.every(interval => interval >= 4 && interval <= 6);
+      const areIntervalsRegular = intervals.every(interval => interval >= 4 && interval <= 10);
 
       // Verifica se a duração de cada contração está entre 30 e 90 segundos (0.5 e 1.5 minutos)
       const areDurationsRegular = durations.every(duration => duration >= 0.5 && duration <= 1.5);
@@ -149,28 +179,44 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Appbar.Header>
-        <Appbar.Action icon="information" onPress={() => navigation.navigate('About')} />
-        <Appbar.Content title="Monitor de Contrações" />
-        <Appbar.Action icon="delete" onPress={clearContractions} /> 
+    <SafeAreaView style={styles.containerTela}>
+      <Appbar.Header style={{ backgroundColor: '#d2ded0' }}>
+        <Appbar.Action style={{paddingRight: 20}} icon="information" color="#1358e3" onPress={() => navigation.navigate('About')} />
+        <Appbar.Action style={{paddingLeft: 20}}  icon="delete" color="#e31313" onPress={confirmClearContractions} />
       </Appbar.Header>
-      <Text style={styles.timer}>
-        {isRunning
-          ? `${Math.floor((new Date() - startTime) / 1000)} s`
-          : '00:00:00'}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={clearModalVisible}
+        onRequestClose={() => {
+        setClearModalVisible(false);
+        }}
+>
+      <View style={styles.modalView}>
+        <Text style={styles.modalText}>Tem certeza que deseja limpar todo o Histórico?</Text>
+      <View style={styles.modalButton}>
+          <Button title="Confirmar" onPress={clearContractions} color="green"/>
+        <View style={styles.modalButton} />
+         <Button title="Cancelar" onPress={() => setClearModalVisible(false)} color="red" />
+      </View>
+        </View>
+    </Modal>
+          <Text style={styles.timer}>
+        {isRunning ? `${Math.floor((new Date() - startTime) / 1000)} s` : '00:00:00'}
       </Text>
       <Text>Duração Média: {calculateAverageDuration()} segundos</Text>
-      <Text>Frequência Média: {calculateAverageFrequency()} minutos</Text>
-      <FlatList
+      <Text style={{ paddingTop: 6 , paddingBottom: 4}}>Frequência Média: {calculateAverageFrequency()} minutos</Text>
+      <FlatList 
         data={contractions}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item, index }) => (
-          <TouchableOpacity onLongPress={() => deleteContraction(index)}>
-            <View style={styles.item}>
-              <Text>{index + 1}</Text>
-              <Text>Duração: {item.duration} segundos</Text>
-              <Text>{new Date(item.start).toLocaleString()}</Text>
+          <TouchableOpacity onLongPress={() => confirmDeleteContraction(index)}>
+            <View style={styles.itemFlatList}>
+            <View style={styles.indexCircle}>
+            <Text style={styles.indexText}>{index + 1}</Text>
+          </View>
+              <Text style={{paddingTop: 2}}>Duração: {item.duration} segundos</Text>
+              <Text>Inicio: {new Date(item.start).toLocaleString()}</Text>
               <Text>{item.intensity || 'N/A'}</Text>
             </View>
           </TouchableOpacity>
@@ -178,7 +224,7 @@ const HomeScreen = ({ navigation }) => {
       />
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.roundButton, { backgroundColor: isRunning ? '#f00' : '#4CAF50' }]}
+          style={[styles.roundButton, { backgroundColor: isRunning ? '#ff0000' : '#47b300' }]}
           onPress={startPauseTimer}
         >
           <Text style={styles.buttonText}>{isRunning ? 'Fim' : 'Início'}</Text>
@@ -194,11 +240,11 @@ const HomeScreen = ({ navigation }) => {
       >
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Selecione a Intensidade</Text>
-          <View style={styles.modalButtons}>
+          <View style={styles.modalButtonsVertical}>
             <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'green' }]} onPress={() => saveContraction('Leve')}>
               <Text style={styles.modalButtonText}>Leve</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'yellow' }]} onPress={() => saveContraction('Moderada')}>
+            <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#cfc917' }]} onPress={() => saveContraction('Moderada')}>
               <Text style={styles.modalButtonText}>Moderada</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'red' }]} onPress={() => saveContraction('Intensa')}>
@@ -208,17 +254,42 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </Modal>
     </SafeAreaView>
-  );
-};
+  );}
+  
 
 const styles = StyleSheet.create({
-  container: {
+  containerTela: {
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
+    padding: 10,
+    backgroundColor: '#d2ded0'
+  },
+  itemFlatList: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    alignItems: 'center',
+    backgroundColor: '#faf3ff',
+    marginVertical: 2,
+    lexDirection: 'row',
+    width: '100%',
+    borderRadius: 16,
+  },
+  indexCircle: {
+    width: 30, 
+    height: 30, 
+    borderRadius: 15,
+    backgroundColor: '#ff73a1',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  indexText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   timer: {
+    paddingTop: 4,
     fontSize: 48,
     marginBottom: 20,
     textAlign: 'center',
@@ -231,14 +302,14 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    bottom: 120,
+    bottom: 40,
     width: '100%',
     alignItems: 'center',
   },
   roundButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -251,6 +322,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 35,
+    backgroundColor: '#ebecf0',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -265,18 +337,21 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
   },
-  modalButtons: {
+  modalButtonsVertical: {
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 10,
   },
   modalButton: {
     padding: 10,
-    borderRadius: 5,
-    marginVertical: 5,
+    borderRadius: 8,
+    marginVertical: 10,
   },
   modalButtonText: {
     color: 'white',
-  },
+    textAlign: 'center',
+    fontWeight: 'bold'
+  }
 });
 
 export default HomeScreen;

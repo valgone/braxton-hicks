@@ -1,34 +1,58 @@
 import React from 'react';
-import { SafeAreaView, Text, ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView, Text, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
+
 
 const AboutScreen = () => {
+
+  // Abrir link da fonte.
+  const handlePressLink = () => {
+    Linking.openURL('https://www.ncbi.nlm.nih.gov/books/NBK470546/').catch(err => console.error('Failed to open URL:', err));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Text style={styles.title}>Sobre o Aplicativo</Text>
-        <Text style={styles.sectionTitle}>Contrações de Braxton Hicks</Text>
+        <Text style={styles.sectionTitle}>Como usar o aplicativo</Text>
         <Text style={styles.text}>
-          As contrações de Braxton Hicks, também conhecidas como "falsas contrações" ou "falso trabalho de parto", são contrações uterinas que podem ocorrer durante a gravidez. Elas são a forma do corpo se preparar para o trabalho de parto real, mas não indicam que o trabalho de parto começou. Essas contrações são geralmente irregulares e não se tornam mais frequentes com o tempo.
+        No início de uma contração, pressione o botão "Início". Ao final da contração, pressione "Fim". 
+        Logo após, selecione uma opção de intensidade para atribuir ao registro. Será registrado uma contração contendo:
         </Text>
+        <Text style={styles.listItem}>- Duração da contração.</Text>
+        <Text style={styles.listItem}>- A data e hora em que foi iniciada.</Text>
+        <Text style={styles.listItem}>- A intensidade.</Text>
+        <Text style={styles.text}>
+        A aplicação também irá exibir a média da duração das contrações e média da frequência.
+        </Text>
+        <Text style={styles.text}>
+        Registre 3 ou mais contrações e o aplicativo verificará se as contrações podem indicar o início do parto.
+        </Text>
+        <Text style={styles.text}>Para apagar uma contração, pressione e aguarde até que a mensagem de confirmação apareça.</Text>
+        <Text style={styles.text}>Para apagar todo histórico pressione o icone da lixeira em vermelho.</Text>
+    
         <Text style={styles.sectionTitle}>Diferença entre Contrações Falsas e Reais</Text>
-        <Text style={styles.text}>Contrações Falsas (Braxton Hicks):</Text>
+        <Text style={styles.sectionTitle}>Contrações Falsas (Braxton Hicks):</Text>
         <Text style={styles.listItem}>- Irregulares em intensidade.</Text>
         <Text style={styles.listItem}>- Geralmente não são dolorosas.</Text>
         <Text style={styles.listItem}>- Não aumentam em frequência.</Text>
         <Text style={styles.listItem}>- Frequentemente param com uma mudança de atividade ou posição.</Text>
-        <Text style={styles.text}>Contrações Reais (Trabalho de Parto):</Text>
+        <Text style={styles.sectionTitle}>Contrações Reais (Trabalho de Parto):</Text>
         <Text style={styles.listItem}>- Regulares em intensidade.</Text>
         <Text style={styles.listItem}>- Aumentam em frequência e intensidade.</Text>
         <Text style={styles.listItem}>- Geralmente dolorosas.</Text>
         <Text style={styles.listItem}>- Não param com uma mudança de atividade ou posição.</Text>
-        <Text style={styles.sectionTitle}>Recomendações para Gestantes</Text>
-        <Text style={styles.text}>
-          Se você experimentar contrações, aqui estão algumas dicas para ajudar a gerenciá-las:
-        </Text>
-        <Text style={styles.listItem}>- Beba bastante água para se manter hidratada.</Text>
-        <Text style={styles.listItem}>- Mude sua atividade ou posição para ver se as contrações param.</Text>
-        <Text style={styles.listItem}>- Descanse e relaxe o máximo possível.</Text>
-        <Text style={styles.listItem}>- Acompanhe suas contrações e entre em contato com seu profissional de saúde se perceber um padrão ou se elas se tornarem mais intensas.</Text>
+
+        <Text style={styles.sectionTitle}>Em casos de contrações que você identifique:</Text>
+        <Text style={styles.listItem}>- Sangramento vaginal</Text>
+        <Text style={styles.listItem}>- Vazamento de líquido pela vagina</Text>
+        <Text style={styles.listItem}>- Contrações fortes a cada 5 minutos durante uma hora</Text>
+        <Text style={styles.listItem}>- Contrações que a mulher não consegue "caminhar durante"</Text>
+        <Text style={styles.listItem}>- Uma mudança notável no movimento fetal, ou se houver menos de dez movimentos a cada 2 horas.</Text>
+        <Text style={styles.sectionTitle}>Contate seu plano de saúde ou médico responsável</Text>
+
+        <Text style={styles.listItem}>Fonte:</Text>
+        <TouchableOpacity onPress={handlePressLink}>
+          <Text style={[styles.listItem, styles.link]}>Biblioteca Nacional de Medicina dos Estados Unidos</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
 
@@ -59,6 +83,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
     marginLeft: 20,
+  },
+  link: {
+    color: 'blue',
+    textDecorationLine: 'underline',
   },
 });
 
