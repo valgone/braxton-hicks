@@ -147,7 +147,7 @@ const HomeScreen = ({ navigation }) => {
         return (new Date(contraction.end) - new Date(contraction.start)) / 1000 / 60;
       });
 
-      // Verifica se os intervalos estão entre 4 e 6 minutos
+      // Verifica se os intervalos estão entre 4 e 10 minutos
       const areIntervalsRegular = intervals.every(interval => interval >= 4 && interval <= 10);
 
       // Verifica se a duração de cada contração está entre 30 e 90 segundos (0.5 e 1.5 minutos)
